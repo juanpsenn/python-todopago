@@ -301,7 +301,7 @@
 	</wsdl:binding>
 	<wsdl:service name="Authorize">
 		<wsdl:port name="AuthorizeHttpsSoap11Endpoint" binding="ns:AuthorizeSoap11Binding">
-			<soap:address location="https://192.168.135.35:8443/services/Authorize.AuthorizeHttpsSoap11Endpoint"/>
+			<soap:address location="https://apis.todopago.com.ar/services/t/1.1/Authorize"/>
 		</wsdl:port>
 		<wsdl:port name="AuthorizeHttpSoap11Endpoint" binding="ns:AuthorizeSoap11Binding">
 			<soap:address location="http://192.168.135.35:8480/services/Authorize.AuthorizeHttpSoap11Endpoint"/>
