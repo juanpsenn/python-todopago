@@ -1,13 +1,14 @@
 from decimal import Decimal
 from typing import List, Optional
 
-from clients import get_client
-from helpers import Item, get_currency, object_to_xml
+from .clients import get_client
+from .helpers import Item, get_currency, object_to_xml
 
 
 class TodoPagoConnector:
     def __init__(self, token: str, merchant: int, success_url: str, failure_url: str):
         self.client = get_client(token)
+        self.token = token
         self.merchant = merchant
         self.success_url = success_url
         self.failure_url = failure_url
@@ -36,7 +37,7 @@ class TodoPagoConnector:
             "MERCHANT": self.merchant,
             "OPERATIONID": operation_id,
             "CURRENCYCODE": str(currency).zfill(3),
-            "AMOUNT": str(amount),
+            "AMOUNT": "%.2f" % (amount),
             "TIMEOUT": "300000",
             "CSBTCITY": city,
             "CSSTCITY": city,
@@ -61,23 +62,35 @@ class TodoPagoConnector:
             "CSBTCUSTOMERID": str(customer_id),
             "CSBTIPADDRESS": customer_ip_address,
             "CSPTCURRENCY": get_currency(currency),
-            "CSPTGRANDTOTALAMOUNT": str(amount),
+            "CSPTGRANDTOTALAMOUNT": "%.2f" % (amount),
             "CSITPRODUCTCODE": str("default#" * len(items))[:-1],
             "CSITPRODUCTDESCRIPTION": "#".join([i.description for i in items]),
             "CSITPRODUCTNAME": "#".join([i.name for i in items]),
             "CSITPRODUCTSKU": "#".join([i.sku for i in items]),
-            "CSITTOTALAMOUNT": "#".join([str(i.amount) for i in items]),
+            "CSITTOTALAMOUNT": "#".join(["%.2f" % (i.amount) for i in items]),
             "CSITQUANTITY": "#".join([str(i.quantity) for i in items]),
-            "CSITUNITPRICE": "#".join([str(i.unit_price) for i in items]),
+            "CSITUNITPRICE": "#".join(["%.2f" % (i.unit_price) for i in items]),
         }
 
         merchant_info.update({"Payload": object_to_xml(operation, "Request")})
-        print(merchant_info)
+        print(operation)
+        res = self.client.service.SendAuthorizeRequest(**merchant_info)
+        print(res)
+
+    def get_operation_status(self, request_key: str, answer_key: str):
+        body = {
+            "Security": self.token[-32:],
+            "Merchant": self.merchant,
+            "RequestKey": request_key,
+            "AnswerKey": answer_key,
+        }
+        res = self.client.service.GetAuthorizeAnswer(**body)
+        print(res)
 
     def _parse_merchant_info(self):
         return {
             "Security": self.token[-32:],
             "Merchant": self.merchant,
             "URL_OK": self.success_url,
-            "URL_Error": self.failure_url,
+            "URL_ERROR": self.failure_url,
         }

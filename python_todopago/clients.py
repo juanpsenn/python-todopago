@@ -1,8 +1,6 @@
-import os
-
 from zeep import Client, Settings
 
-wsdl = f"{os.getcwd()}/wsdl/Authorize.wsdl"
+wsdl = "python_todopago/wsdl/Authorize.wsdl"
 
 
 def get_client(token: str) -> Client:
