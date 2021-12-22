@@ -32,7 +32,7 @@ class TodoPagoConnector:
         customer_ip_address: str,
         items: List[Item],
     ):
-        merchant_info = self._parse_merchant_info()
+        req_body = self._parse_merchant_info()
         operation = {
             "MERCHANT": self.merchant,
             "OPERATIONID": operation_id,
@@ -72,20 +72,19 @@ class TodoPagoConnector:
             "CSITUNITPRICE": "#".join(["%.2f" % (i.unit_price) for i in items]),
         }
 
-        merchant_info.update({"Payload": object_to_xml(operation, "Request")})
-        print(operation)
-        res = self.client.service.SendAuthorizeRequest(**merchant_info)
-        print(res)
+        req_body.update({"Payload": object_to_xml(operation, "Request")})
+        res = self.client.service.SendAuthorizeRequest(**req_body)
+        return res
 
     def get_operation_status(self, request_key: str, answer_key: str):
-        body = {
+        req_body = {
             "Security": self.token[-32:],
             "Merchant": self.merchant,
             "RequestKey": request_key,
             "AnswerKey": answer_key,
         }
-        res = self.client.service.GetAuthorizeAnswer(**body)
-        print(res)
+        res = self.client.service.GetAuthorizeAnswer(**req_body)
+        return res
 
     def _parse_merchant_info(self):
         return {
