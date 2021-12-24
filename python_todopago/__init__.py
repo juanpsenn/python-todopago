@@ -1,17 +1,54 @@
+import json
 from decimal import Decimal
-from typing import List, Optional
+from typing import Dict, List, Optional, Tuple
+
+import requests
 
 from .clients import get_client
 from .helpers import Item, get_currency, object_to_xml
 
+API = "https://apis.todopago.com.ar/api"
+
 
 class TodoPagoConnector:
-    def __init__(self, token: str, merchant: int, success_url: str, failure_url: str):
-        self.client = get_client(token)
-        self.token = token
-        self.merchant = merchant
+    success_url: str
+    failure_url: str
+    token: str
+    merchant: int
+
+    def __init__(
+        self,
+        success_url: str,
+        failure_url: str,
+        token: str = None,
+        merchant: int = None,
+        username: str = None,
+        password: str = None,
+    ):
         self.success_url = success_url
         self.failure_url = failure_url
+
+        if not token and (username and password):
+            merchant, token = TodoPagoConnector.get_credentials(username, password)
+
+        if not (token and merchant):
+            raise Exception()
+
+        self.token = token
+        self.merchant = merchant
+
+    @staticmethod
+    def get_credentials(
+        username: str, password: str
+    ) -> Tuple[Optional[int], Optional[str]]:
+        body = json.dumps({"USUARIO": username, "CLAVE": password})
+        res = requests.post(
+            API + "/Credentials",
+            body,
+            headers={"Content-Type": "application/json"},
+        )
+        data = res.json().get("Credentials")
+        return data.get("merchantId", None), data.get("APIKey", None)
 
     def create_operation(
         self,
@@ -32,6 +69,7 @@ class TodoPagoConnector:
         customer_ip_address: str,
         items: List[Item],
     ):
+        client = get_client(self.token)
         req_body = self._parse_merchant_info()
         operation = {
             "MERCHANT": self.merchant,
@@ -71,22 +109,22 @@ class TodoPagoConnector:
             "CSITQUANTITY": "#".join([str(i.quantity) for i in items]),
             "CSITUNITPRICE": "#".join(["%.2f" % (i.unit_price) for i in items]),
         }
-
         req_body.update({"Payload": object_to_xml(operation, "Request")})
-        res = self.client.service.SendAuthorizeRequest(**req_body)
+        res = client.service.SendAuthorizeRequest(**req_body)
         return res
 
     def get_operation_status(self, request_key: str, answer_key: str):
+        client = get_client(self.token)
         req_body = {
             "Security": self.token[-32:],
             "Merchant": self.merchant,
             "RequestKey": request_key,
             "AnswerKey": answer_key,
         }
-        res = self.client.service.GetAuthorizeAnswer(**req_body)
+        res = client.service.GetAuthorizeAnswer(**req_body)
         return res
 
-    def _parse_merchant_info(self):
+    def _parse_merchant_info(self) -> Dict:
         return {
             "Security": self.token[-32:],
             "Merchant": self.merchant,

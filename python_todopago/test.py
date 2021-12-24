@@ -11,10 +11,10 @@ items = [
 
 def test_operation_create():
     tpc = TodoPagoConnector(
-        "TODOPAGO 29A390FA2F9CBD8DBE9142B438B55D85",
-        2083247,
         "http://example.com/success/",
         "http://example.com/failure/",
+        "TODOPAGO ",
+        12345678,
     )
     tpc.create_operation(
         "ABC",
@@ -39,12 +39,17 @@ def test_operation_create():
 
 def test_get_operation():
     tpc = TodoPagoConnector(
-        "TODOPAGO 29A390FA2F9CBD8DBE9142B438B55D85",
-        2083247,
         "http://example.com/success/",
         "http://example.com/failure/",
+        "TODOPAGO ",
+        12345678,
     )
     tpc.get_operation_status(
         "1fb8ec9a-14dd-42ec-bf1e-6d5820799642", "44cbea31-1373-4544-aa6b-42abff696944"
     )
+    assert 1 == 1
+
+
+def test_get_credentials():
+    TodoPagoConnector.get_credentials("test@gmail.com", "not a password")
     assert 1 == 1
