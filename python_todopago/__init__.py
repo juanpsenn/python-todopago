@@ -5,7 +5,8 @@ from typing import Dict, List, Optional, Tuple
 import requests
 
 from .clients import get_client
-from .helpers import Item, get_currency, object_to_xml
+from .helpers import Item, object_to_xml
+from .serializers import serialize_operation
 
 API = "https://apis.todopago.com.ar/api"
 
@@ -71,44 +72,25 @@ class TodoPagoConnector:
     ):
         client = get_client(self.token)
         req_body = self._parse_merchant_info()
-        operation = {
-            "MERCHANT": self.merchant,
-            "OPERATIONID": operation_id,
-            "CURRENCYCODE": str(currency).zfill(3),
-            "AMOUNT": "%.2f" % (amount),
-            "TIMEOUT": "300000",
-            "CSBTCITY": city,
-            "CSSTCITY": city,
-            "CSBTCOUNTRY": country_code,
-            "CSSTCOUNTRY": country_code,
-            "CSBTEMAIL": billing_email,
-            "CSSTEMAIL": billing_email,
-            "CSBTFIRSTNAME": billing_first_name,
-            "CSSTFIRSTNAME": billing_first_name,
-            "CSBTLASTNAME": billing_last_name,
-            "CSSTLASTNAME": billing_last_name,
-            "CSBTPHONENUMBER": billing_phone,
-            "CSSTPHONENUMBER": billing_phone,
-            "CSBTPOSTALCODE": billing_postcode,
-            "CSSTPOSTALCODE": billing_postcode,
-            "CSBTSTATE": state_code,
-            "CSSTSTATE": state_code,
-            "CSBTSTREET1": billing_address_1,
-            "CSSTSTREET1": billing_address_1,
-            "CSBTSTREET2": billing_address_2,
-            "CSSTSTREET2": billing_address_2,
-            "CSBTCUSTOMERID": str(customer_id),
-            "CSBTIPADDRESS": customer_ip_address,
-            "CSPTCURRENCY": get_currency(currency),
-            "CSPTGRANDTOTALAMOUNT": "%.2f" % (amount),
-            "CSITPRODUCTCODE": str("default#" * len(items))[:-1],
-            "CSITPRODUCTDESCRIPTION": "#".join([i.description for i in items]),
-            "CSITPRODUCTNAME": "#".join([i.name for i in items]),
-            "CSITPRODUCTSKU": "#".join([i.sku for i in items]),
-            "CSITTOTALAMOUNT": "#".join(["%.2f" % (i.amount) for i in items]),
-            "CSITQUANTITY": "#".join([str(i.quantity) for i in items]),
-            "CSITUNITPRICE": "#".join(["%.2f" % (i.unit_price) for i in items]),
-        }
+        operation = serialize_operation(
+            self.merchant,
+            operation_id,
+            currency,
+            amount,
+            city,
+            country_code,
+            state_code,
+            billing_first_name,
+            billing_last_name,
+            billing_email,
+            billing_phone,
+            billing_postcode,
+            billing_address_1,
+            billing_address_2,
+            customer_id,
+            customer_ip_address,
+            items,
+        )
         req_body.update({"Payload": object_to_xml(operation, "Request")})
         res = client.service.SendAuthorizeRequest(**req_body)
         return res
