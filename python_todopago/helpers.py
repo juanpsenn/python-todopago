@@ -16,6 +16,26 @@ class Item:
     unit_price: Decimal
 
 
+@dataclass(frozen=True)
+class Authorization:
+    """A datacalss holding response details from SendAuthorizeRequest service"""
+
+    status_code: int
+    status_message: str
+    form_url: Optional[str]
+    request_key: Optional[str]
+    public_request_key: Optional[str]
+
+
+@dataclass(frozen=True)
+class OperationStatus:
+    """A datacalss holding response details from GetAuthorizedAnswer service"""
+
+    status_code: int
+    status_message: str
+    authorization_key: str
+
+
 def get_currency(code: int) -> Optional[str]:
     """
     Get alphabetic currency code by numeric code, if there is no match returns None.

@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Tuple
 import requests
 
 from .clients import get_client
-from .helpers import Item, object_to_xml
+from .helpers import Authorization, Item, OperationStatus, object_to_xml
 from .serializers import serialize_operation
 
 API = "https://apis.todopago.com.ar/api"
@@ -69,7 +69,7 @@ class TodoPagoConnector:
         customer_id: str,
         customer_ip_address: str,
         items: List[Item],
-    ):
+    ) -> Authorization:
         client = get_client(self.token)
         req_body = self._parse_merchant_info()
         operation = serialize_operation(
@@ -93,9 +93,17 @@ class TodoPagoConnector:
         )
         req_body.update({"Payload": object_to_xml(operation, "Request")})
         res = client.service.SendAuthorizeRequest(**req_body)
-        return res
+        return Authorization(
+            res.StatusCode,
+            res.StatusMessage,
+            res.URL_Request,
+            res.RequestKey,
+            res.PublicRequestKey,
+        )
 
-    def get_operation_status(self, request_key: str, answer_key: str):
+    def get_operation_status(
+        self, request_key: str, answer_key: str
+    ) -> OperationStatus:
         client = get_client(self.token)
         req_body = {
             "Security": self.token[-32:],
@@ -104,7 +112,7 @@ class TodoPagoConnector:
             "AnswerKey": answer_key,
         }
         res = client.service.GetAuthorizeAnswer(**req_body)
-        return res
+        return OperationStatus(res.StatusCode, res.StatusMessage, res.AuthorizationKey)
 
     def _parse_merchant_info(self) -> Dict:
         return {
