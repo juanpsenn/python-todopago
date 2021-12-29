@@ -36,6 +36,14 @@ class OperationStatus:
     authorization_key: str
 
 
+@dataclass(frozen=True)
+class Credentials:
+    """A datacalss holding response details from /api/Credentials"""
+
+    merchant: int
+    token: str
+
+
 def get_currency(code: int) -> Optional[str]:
     """
     Get alphabetic currency code by numeric code, if there is no match returns None.
