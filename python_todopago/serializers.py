@@ -61,3 +61,21 @@ def serialize_operation(
         "CSITQUANTITY": "#".join([str(i.quantity) for i in items]),
         "CSITUNITPRICE": "#".join(["%.2f" % (i.unit_price) for i in items]),
     }
+
+
+def serialize_merchant(token: str, merchant: int, success_url: str, failure_url: str):
+    return {
+        "Security": token[-32:],
+        "Merchant": merchant,
+        "URL_OK": success_url,
+        "URL_ERROR": failure_url,
+    }
+
+
+def serialize_gaa(token: str, merchant: int, request_key: str, answer_key: str):
+    return {
+        "Security": token[-32:],
+        "Merchant": merchant,
+        "RequestKey": request_key,
+        "AnswerKey": answer_key,
+    }
