@@ -5,6 +5,7 @@ from typing import Dict, List, Optional, Tuple
 import requests
 
 from .clients import get_client
+from .exceptions import InvalidCredentialsException
 from .helpers import Authorization, Item, OperationStatus, object_to_xml
 from .serializers import serialize_operation
 
@@ -33,7 +34,7 @@ class TodoPagoConnector:
             merchant, token = TodoPagoConnector.get_credentials(username, password)
 
         if not (token and merchant):
-            raise Exception()
+            raise InvalidCredentialsException()
 
         self.token = token
         self.merchant = merchant
