@@ -1,13 +1,14 @@
 import json
+from dataclasses import asdict
 from decimal import Decimal
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional
 
 import requests
 
 from .clients import get_client
 from .exceptions import InvalidCredentialsException
-from .helpers import Authorization, Item, OperationStatus, object_to_xml
-from .serializers import serialize_operation
+from .helpers import Authorization, Credentials, Item, OperationStatus, object_to_xml
+from .serializers import serialize_gaa, serialize_merchant, serialize_operation
 
 API = "https://apis.todopago.com.ar/api"
 
@@ -31,18 +32,15 @@ class TodoPagoConnector:
         self.failure_url = failure_url
 
         if not token and (username and password):
-            merchant, token = TodoPagoConnector.get_credentials(username, password)
+            credentials = TodoPagoConnector.get_credentials(username, password)
+            if None in asdict(credentials).values():
+                raise InvalidCredentialsException()
 
-        if not (token and merchant):
-            raise InvalidCredentialsException()
-
-        self.token = token
-        self.merchant = merchant
+        self.token = token or credentials.token
+        self.merchant = merchant or credentials.merchant
 
     @staticmethod
-    def get_credentials(
-        username: str, password: str
-    ) -> Tuple[Optional[int], Optional[str]]:
+    def get_credentials(username: str, password: str) -> Credentials:
         body = json.dumps({"USUARIO": username, "CLAVE": password})
         res = requests.post(
             API + "/Credentials",
@@ -50,7 +48,9 @@ class TodoPagoConnector:
             headers={"Content-Type": "application/json"},
         )
         data = res.json().get("Credentials")
-        return data.get("merchantId", None), data.get("APIKey", None)
+        return Credentials(
+            merchant=data.get("merchantId", None), token=data.get("APIKey", None)
+        )
 
     def create_operation(
         self,
@@ -72,7 +72,9 @@ class TodoPagoConnector:
         items: List[Item],
     ) -> Authorization:
         client = get_client(self.token)
-        req_body = self._parse_merchant_info()
+        req_body = serialize_merchant(
+            self.token, self.merchant, self.success_url, self.failure_url
+        )
         operation = serialize_operation(
             self.merchant,
             operation_id,
@@ -106,19 +108,6 @@ class TodoPagoConnector:
         self, request_key: str, answer_key: str
     ) -> OperationStatus:
         client = get_client(self.token)
-        req_body = {
-            "Security": self.token[-32:],
-            "Merchant": self.merchant,
-            "RequestKey": request_key,
-            "AnswerKey": answer_key,
-        }
+        req_body = serialize_gaa(self.token, self.merchant, request_key, answer_key)
         res = client.service.GetAuthorizeAnswer(**req_body)
         return OperationStatus(res.StatusCode, res.StatusMessage, res.AuthorizationKey)
-
-    def _parse_merchant_info(self) -> Dict:
-        return {
-            "Security": self.token[-32:],
-            "Merchant": self.merchant,
-            "URL_OK": self.success_url,
-            "URL_ERROR": self.failure_url,
-        }
