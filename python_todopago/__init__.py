@@ -1,15 +1,17 @@
 import json
+import logging
 from dataclasses import asdict
 from decimal import Decimal
 from typing import List, Optional
 
 import requests
 
-from .clients import get_client
+from .clients import Client, get_client
 from .exceptions import InvalidCredentialsException
 from .helpers import Authorization, Credentials, Item, OperationStatus, object_to_xml
 from .serializers import serialize_gaa, serialize_merchant, serialize_operation
 
+logging.getLogger("zeep").setLevel(logging.ERROR)
 API = "https://apis.todopago.com.ar/api"
 
 
@@ -18,6 +20,8 @@ class TodoPagoConnector:
     failure_url: str
     token: str
     merchant: int
+    client: Client
+    sandbox: bool
 
     def __init__(
         self,
@@ -27,9 +31,11 @@ class TodoPagoConnector:
         merchant: int = None,
         username: str = None,
         password: str = None,
+        sandbox: bool = False,
     ):
         self.success_url = success_url
         self.failure_url = failure_url
+        self.sandbox = sandbox
 
         if not token and (username and password):
             credentials = TodoPagoConnector.get_credentials(username, password)
@@ -38,6 +44,7 @@ class TodoPagoConnector:
 
         self.token = token or credentials.token
         self.merchant = merchant or credentials.merchant
+        self.client = get_client(self.token, self.sandbox)
 
     @staticmethod
     def get_credentials(username: str, password: str) -> Credentials:
@@ -52,7 +59,7 @@ class TodoPagoConnector:
             merchant=data.get("merchantId", None), token=data.get("APIKey", None)
         )
 
-    def create_operation(
+    def authorize_operation(
         self,
         operation_id: str,
         currency: int,
@@ -71,7 +78,6 @@ class TodoPagoConnector:
         customer_ip_address: str,
         items: List[Item],
     ) -> Authorization:
-        client = get_client(self.token)
         req_body = serialize_merchant(
             self.token, self.merchant, self.success_url, self.failure_url
         )
@@ -94,8 +100,9 @@ class TodoPagoConnector:
             customer_ip_address,
             items,
         )
+        print(operation)
         req_body.update({"Payload": object_to_xml(operation, "Request")})
-        res = client.service.SendAuthorizeRequest(**req_body)
+        res = self.client.service.SendAuthorizeRequest(**req_body)
         return Authorization(
             res.StatusCode,
             res.StatusMessage,
@@ -107,7 +114,6 @@ class TodoPagoConnector:
     def get_operation_status(
         self, request_key: str, answer_key: str
     ) -> OperationStatus:
-        client = get_client(self.token)
         req_body = serialize_gaa(self.token, self.merchant, request_key, answer_key)
-        res = client.service.GetAuthorizeAnswer(**req_body)
+        res = self.client.service.GetAuthorizeAnswer(**req_body)
         return OperationStatus(res.StatusCode, res.StatusMessage, res.AuthorizationKey)
