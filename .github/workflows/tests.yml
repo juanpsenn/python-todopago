@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - "main"
-  schedule:
-    - cron: "0 0 * * *"
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -13,7 +11,6 @@ jobs:
   test:
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
         os: [ubuntu-latest]
         python-version: ['3.7', '3.8', '3.9']
@@ -26,7 +23,6 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install tox tox-gh-actions
+        pip install --upgrade tox virtualenv setuptools pip
     - name: Test with tox
-      run: tox
+      run: tox -e py
