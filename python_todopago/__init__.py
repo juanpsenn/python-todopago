@@ -98,7 +98,6 @@ class TodoPagoConnector:
             customer_ip_address,
             items,
         )
-        print(operation)
         req_body.update({"Payload": object_to_xml(operation, "Request")})
         res = self.client.service.SendAuthorizeRequest(**req_body)
         return Authorization(
