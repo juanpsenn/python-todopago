@@ -25,16 +25,12 @@ class TodoPagoConnector:
 
     def __init__(
         self,
-        success_url: str,
-        failure_url: str,
         token: str = None,
         merchant: int = None,
         username: str = None,
         password: str = None,
         sandbox: bool = False,
     ):
-        self.success_url = success_url
-        self.failure_url = failure_url
         self.sandbox = sandbox
 
         if not token and (username and password):
@@ -61,6 +57,8 @@ class TodoPagoConnector:
 
     def authorize_operation(
         self,
+        success_url: str,
+        failure_url: str,
         operation_id: str,
         currency: int,
         amount: Decimal,
@@ -79,7 +77,7 @@ class TodoPagoConnector:
         items: List[Item],
     ) -> Authorization:
         req_body = serialize_merchant(
-            self.token, self.merchant, self.success_url, self.failure_url
+            self.token, self.merchant, success_url, failure_url
         )
         operation = serialize_operation(
             self.merchant,

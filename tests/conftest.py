@@ -16,6 +16,8 @@ def items():
 @pytest.fixture
 def operation_info(items):
     return {
+        "success_url": "http://example.com/success/",
+        "failure_url": "http://example.com/failure/",
         "operation_id": "ABC",
         "currency": 32,
         "amount": 2.00,

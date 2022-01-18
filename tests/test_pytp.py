@@ -6,8 +6,6 @@ from python_todopago.clients import ENDPOINTS
 
 def test_authorize_operation(operation_info):
     connector = TodoPagoConnector(
-        "http://example.com/success/",
-        "http://example.com/failure/",
         "PRISMA A793D307441615AF6AAAD7497A75DE59",
         2159,
         sandbox=True,
@@ -39,8 +37,6 @@ def test_authorize_operation(operation_info):
 
 def test_get_operation_status():
     connector = TodoPagoConnector(
-        "http://example.com/success/",
-        "http://example.com/failure/",
         "PRISMA A793D307441615AF6AAAD7497A75DE59",
         2159,
         sandbox=True,
