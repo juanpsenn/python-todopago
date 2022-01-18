@@ -1,4 +1,5 @@
 # python-todopago
+![Test](https://github.com/github/docs/actions/workflows/test.yml/badge.svg?branch=main)
 
 python-todopago is a library based on the TodoPagos's Python-SDK. The main purpose of this library is to provide a friendly and pythonic way to consume TodoPagos's services, using [zeep](https://docs.python-zeep.org/en/master/) as soap client and [requests](https://docs.python-requests.org/en/latest/) for rest client.
 

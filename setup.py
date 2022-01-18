@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
+from pathlib import Path
+
 from setuptools import find_packages, setup
 
+this_directory = Path(__file__).parent
+long_description = (this_directory / "README.md").read_text()
+
 setup(
+    version="1.0.0",
     name="python-todopago",
     description="TodoPago modern SDK for python",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     author="Juan Pablo Senn",
     author_email="juanpsenn@gmail.com",
     url="https://github.com/juanpsenn/python-todopago",
