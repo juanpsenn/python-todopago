@@ -7,7 +7,7 @@ this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
 setup(
-    version="1.0.0",
+    version="1.0.1",
     name="python-todopago",
     description="TodoPago modern SDK for python",
     long_description=long_description,
