@@ -7,7 +7,7 @@ this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
 setup(
-    version="1.0.1",
+    version="1.0.2",
     name="python-todopago",
     description="TodoPago modern SDK for python",
     long_description=long_description,
@@ -20,7 +20,7 @@ setup(
     },
     license="MIT",
     packages=find_packages(),
-    package_data={"python_todopago": ["python_todopago/iso4217.json"]},
+    data_files=[("python_todopago", "iso4217.json")],
     include_package_data=True,
     install_requires=[
         "requests>=2.25.0",
