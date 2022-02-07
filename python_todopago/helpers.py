@@ -1,6 +1,7 @@
 import json
 from dataclasses import dataclass
 from decimal import Decimal
+from os import path
 from typing import Optional, Union
 
 
@@ -49,7 +50,8 @@ def get_currency(code: int) -> Optional[str]:
     Get alphabetic currency code by numeric code, if there is no match returns None.
     This codes are based on ISO 4217 standard.
     """
-    with open("python_todopago/iso4217.json") as data:
+    basedir = path.dirname(__file__)
+    with open(basedir + "/iso4217.json") as data:
         currencies = json.load(data)
         return next(
             (c["alphabetic_code"] for c in currencies if c["numeric_code"] == code),
