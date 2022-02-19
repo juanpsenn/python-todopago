@@ -45,18 +45,32 @@ class Credentials:
     token: str
 
 
-def get_currency(code: int) -> Optional[str]:
+def get_currency(code: Union[int, str]) -> Optional[str]:
     """
     Get alphabetic currency code by numeric code, if there is no match returns None.
+    Also, if the code is not numeric verifies if it is a valid currency code.
     This codes are based on ISO 4217 standard.
     """
+    field = get_fieldname(code)
+
     basedir = path.dirname(__file__)
     with open(basedir + "/iso4217.json") as data:
         currencies = json.load(data)
         return next(
-            (c["alphabetic_code"] for c in currencies if c["numeric_code"] == code),
+            (c["alphabetic_code"] for c in currencies if c[field] == code),
             None,
         )
+
+
+def get_fieldname(code: Union[int, str]) -> str:
+    """
+    Get the field name based on the field name.
+    """
+    if isinstance(code, int):
+        return "numeric_code"
+    elif isinstance(code, str):
+        return "alphabetic_code" if code.isalpha() else "numeric_code"
+    raise TypeError(f"Invalid type for code: {type(code)}, expected int or str.")
 
 
 def object_to_xml(data: Union[dict, bool], root="object"):
