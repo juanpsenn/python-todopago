@@ -19,8 +19,9 @@ def test_get_currency_with_alphacode():
 
 
 def test_get_currency_with_numericcode():
-    code = helpers.get_currency(32)
-    assert code == "ARS"
+    code_a = helpers.get_currency(32)
+    code_b = helpers.get_currency("32")
+    assert code_a == code_b == "ARS"
 
 
 def test_get_currency_with_invalidcode():

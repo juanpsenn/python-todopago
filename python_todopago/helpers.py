@@ -57,7 +57,7 @@ def get_currency(code: Union[int, str]) -> Optional[str]:
     with open(basedir + "/iso4217.json") as data:
         currencies = json.load(data)
         return next(
-            (c["alphabetic_code"] for c in currencies if c[field] == code),
+            (c["alphabetic_code"] for c in currencies if str(c[field]) == str(code)),
             None,
         )
 
