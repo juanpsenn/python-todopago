@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from .helpers import Item, get_currency
 
@@ -7,7 +7,7 @@ from .helpers import Item, get_currency
 def serialize_operation(
     merchant: int,
     operation_id: str,
-    currency: int,
+    currency: Union[str, int],
     amount: Decimal,
     city: str,
     country_code: str,
@@ -23,10 +23,11 @@ def serialize_operation(
     customer_ip_address: str,
     items: List[Item],
 ):
+    cur = get_currency(currency)
     return {
         "MERCHANT": merchant,
         "OPERATIONID": operation_id,
-        "CURRENCYCODE": str(currency).zfill(3),
+        "CURRENCYCODE": cur.numeric.zfill(3),
         "AMOUNT": "%.2f" % (amount),
         "TIMEOUT": "300000",
         "CSBTCITY": city,
@@ -51,7 +52,7 @@ def serialize_operation(
         "CSSTSTREET2": billing_address_2,
         "CSBTCUSTOMERID": str(customer_id),
         "CSBTIPADDRESS": customer_ip_address,
-        "CSPTCURRENCY": get_currency(currency),
+        "CSPTCURRENCY": cur.alpha,
         "CSPTGRANDTOTALAMOUNT": "%.2f" % (amount),
         "CSITPRODUCTCODE": str("default#" * len(items))[:-1],
         "CSITPRODUCTDESCRIPTION": "#".join([i.description for i in items]),
