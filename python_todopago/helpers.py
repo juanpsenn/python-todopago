@@ -19,7 +19,7 @@ class Item:
 
 @dataclass(frozen=True)
 class Authorization:
-    """A datacalss holding response details from SendAuthorizeRequest service"""
+    """Response details from SendAuthorizeRequest service"""
 
     status_code: int
     status_message: str
@@ -30,7 +30,7 @@ class Authorization:
 
 @dataclass(frozen=True)
 class OperationStatus:
-    """A datacalss holding response details from GetAuthorizedAnswer service"""
+    """Response details from GetAuthorizedAnswer service"""
 
     status_code: int
     status_message: str
@@ -39,24 +39,56 @@ class OperationStatus:
 
 @dataclass(frozen=True)
 class Credentials:
-    """A datacalss holding response details from /api/Credentials"""
+    """Response details from /api/Credentials"""
 
     merchant: int
     token: str
 
 
-def get_currency(code: int) -> Optional[str]:
+@dataclass(frozen=True)
+class Currency:
+    """ISO 4217 currency code"""
+
+    alpha: str
+    numeric: str
+
+
+def get_currency(code: Union[int, str]) -> Currency:
     """
-    Get alphabetic currency code by numeric code, if there is no match returns None.
-    This codes are based on ISO 4217 standard.
+    Get currency code by numeric or alphabetic code,
+    if there is no match raises ValueError.
+    These codes are based on ISO 4217 standard.
+
+    :param code: numeric or alphabetic code
     """
+    field = get_fieldname(code)
+
     basedir = path.dirname(__file__)
     with open(basedir + "/iso4217.json") as data:
         currencies = json.load(data)
-        return next(
-            (c["alphabetic_code"] for c in currencies if c["numeric_code"] == code),
+        currency = next(
+            (
+                Currency(c["alphabetic_code"], str(c["numeric_code"]))
+                for c in currencies
+                if str(c[field]) == str(code)
+            ),
             None,
         )
+
+    if not currency:
+        raise ValueError(f"Invalid currency code: {code}")
+    return currency
+
+
+def get_fieldname(code: Union[int, str]) -> str:
+    """
+    Get the field name based on the field name.
+    """
+    if isinstance(code, int):
+        return "numeric_code"
+    elif isinstance(code, str):
+        return "alphabetic_code" if code.isalpha() else "numeric_code"
+    raise TypeError(f"Invalid type for code: {type(code)}, expected int or str.")
 
 
 def object_to_xml(data: Union[dict, bool], root="object"):

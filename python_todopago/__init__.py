@@ -2,7 +2,7 @@ import json
 import logging
 from dataclasses import asdict
 from decimal import Decimal
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import requests
 
@@ -60,7 +60,7 @@ class TodoPagoConnector:
         success_url: str,
         failure_url: str,
         operation_id: str,
-        currency: int,
+        currency: Union[str, int],
         amount: Decimal,
         city: str,
         country_code: str,
