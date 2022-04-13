@@ -1,7 +1,9 @@
+import pytest
 import requests_mock
 
 from python_todopago import TodoPagoConnector
 from python_todopago.clients import ENDPOINTS
+
 
 @pytest.fixture(scope="module")
 def connector():
@@ -10,6 +12,8 @@ def connector():
         2159,
         sandbox=False,
     )
+
+
 def test_authorize_operation(operation_info, connector):
     authorization_response = """
     <?xml version="1.0" encoding="UTF-8"?>
@@ -28,7 +32,7 @@ def test_authorize_operation(operation_info, connector):
 
     with requests_mock.mock() as m:
         m.post(
-            ENDPOINTS[True] + "Authorize",
+            ENDPOINTS[False] + "Authorize",
             text=authorization_response,
         )
         authorization = connector.authorize_operation(**operation_info)
@@ -82,7 +86,7 @@ def test_get_operation_status(connector):
 
     with requests_mock.mock() as m:
         m.post(
-            ENDPOINTS[True] + "Authorize",
+            ENDPOINTS[False] + "Authorize",
             text=status_response,
         )
         status = connector.get_operation_status(
