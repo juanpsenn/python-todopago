@@ -3,14 +3,14 @@ import requests_mock
 from python_todopago import TodoPagoConnector
 from python_todopago.clients import ENDPOINTS
 
-
-def test_authorize_operation(operation_info):
-    connector = TodoPagoConnector(
+@pytest.fixture(scope="module")
+def connector():
+    return TodoPagoConnector(
         "PRISMA A793D307441615AF6AAAD7497A75DE59",
         2159,
-        sandbox=True,
+        sandbox=False,
     )
-
+def test_authorize_operation(operation_info, connector):
     authorization_response = """
     <?xml version="1.0" encoding="UTF-8"?>
     <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
@@ -35,12 +35,7 @@ def test_authorize_operation(operation_info):
         assert authorization.status_code == -1
 
 
-def test_get_operation_status():
-    connector = TodoPagoConnector(
-        "PRISMA A793D307441615AF6AAAD7497A75DE59",
-        2159,
-        sandbox=True,
-    )
+def test_get_operation_status(connector):
     status_response = """
     <?xml version="1.0" encoding="UTF-8"?>
     <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
