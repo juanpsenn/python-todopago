@@ -1,11 +1,17 @@
-name: Publish Python 🐍 distributions 📦 to PyPI and TestPyPI
+name: Publish to PyPI and TestPyPI
 
-on: push
+on:
+  workflow_run:
+    workflows: [Tests]
+    branches: [main]
+    types:
+      - completed
 
 jobs:
   build-n-publish:
-    name: Build and publish Python 🐍 distributions 📦 to PyPI and TestPyPI
+    name: Build and publish to PyPI and TestPyPI
     runs-on: ubuntu-18.04
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
     - uses: actions/checkout@master
     - name: Set up Python 3.9
@@ -26,7 +32,7 @@ jobs:
         --wheel
         --outdir dist/
         .
-    - name: Publish distribution 📦 to Test PyPI
+    - name: Publish to Test PyPI
       uses: pypa/gh-action-pypi-publish@master
       with:
         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
