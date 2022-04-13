@@ -1,4 +1,6 @@
-from zeep import Client, Settings, SqliteCache, Transport
+from zeep import Client, Settings
+from zeep.cache import SqliteCache
+from zeep.transports import Transport
 
 wsdl = "python_todopago/wsdl/Authorize.wsdl"
 ENDPOINTS = {
